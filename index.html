@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#09090b">
+  <meta name="description" content="CineOtaku — free, ad-free discovery for movies, anime and TV series. Track what you watch, build your list, no subscriptions.">
+  <title>CineOtaku — Discover movies, anime &amp; series</title>
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <script src="/api/config"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="/assets/js/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#view">Skip to content</a>
+  <header class="topbar">
+    <a class="brand" href="#/" aria-label="CineOtaku home"><span class="brand-mark">C</span>CINE<span>OTAKU</span></a>
+    <nav aria-label="Main">
+      <a data-nav="home" href="#/">Home</a>
+      <a data-nav="movies" href="#/movies">Movies</a>
+      <a data-nav="tv" href="#/tv">Series</a>
+      <a data-nav="anime" href="#/anime">Anime</a>
+      <a data-nav="list" href="#/list">My List</a>
+    </nav>
+    <div class="top-actions">
+      <form id="search-form" class="search-form" role="search">
+        <input id="search-input" type="search" placeholder="Search…" aria-label="Search movies, series and anime" autocomplete="off" maxlength="100">
+        <button class="icon-btn" type="button" id="search-toggle" aria-label="Toggle search" aria-expanded="false">⌕</button>
+      </form>
+      <div id="account-slot"></div>
+    </div>
+  </header>
+  <div id="config-banner" class="banner" hidden></div>
+  <main id="view" tabindex="-1" aria-live="polite"></main>
+  <footer>
+    <div class="foot-top">
+      <a class="brand" href="#/"><span class="brand-mark">C</span>CINE<span>OTAKU</span></a>
+      <p>Free for everyone. No ads. No subscriptions. No paid tiers.</p>
+    </div>
+    <small>This product uses the TMDB API but is not endorsed or certified by TMDB. Metadata and images are provided by TMDB. CineOtaku does not host video files; it links only to sources added by its admins as authorised.</small>
+  </footer>
+
+  <dialog id="auth-dialog" class="modal auth-modal" aria-labelledby="auth-title"><button class="close-btn" type="button" data-close aria-label="Close">×</button><div id="auth-body"></div></dialog>
+  <dialog id="player-dialog" class="modal player-modal" aria-label="Watch options"><button class="close-btn" type="button" data-close aria-label="Close">×</button><div id="player-content"></div></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

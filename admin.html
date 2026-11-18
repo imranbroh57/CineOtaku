@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#09090b">
+  <title>CineOtaku Admin</title>
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <script src="/api/config"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="/assets/js/admin.js"></script>
+</head>
+<body class="admin-page">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="CineOtaku"><span class="brand-mark">C</span>CINE<span>OTAKU</span></a>
+    <span class="admin-pill">ADMIN</span>
+    <div class="top-actions"><a class="text-link" href="/">← View website</a><button id="signout-btn" class="btn ghost small hidden" type="button">Sign out</button></div>
+  </header>
+
+  <main class="admin-wrap" id="main">
+    <div id="config-msg" class="notice hidden"></div>
+
+    <section id="gate-login" class="panel gate hidden">
+      <p class="eyebrow">RESTRICTED AREA</p>
+      <h1>Admin sign in</h1>
+      <p class="muted">Only accounts with the <code>admin</code> role can manage the catalog. Access is verified by the database, not by this page.</p>
+      <form id="login-form" class="stack">
+        <label>Email<input id="login-email" type="email" autocomplete="username" required></label>
+        <label>Password<input id="login-password" type="password" autocomplete="current-password" required></label>
+        <button class="btn primary" type="submit">Sign in</button>
+      </form>
+      <p id="login-msg" class="status" role="status"></p>
+    </section>
+
+    <section id="gate-denied" class="panel gate hidden">
+      <p class="eyebrow">ACCESS DENIED</p>
+      <h1>No admin permission</h1>
+      <p class="muted" id="denied-text">This account is not an administrator.</p>
+      <div class="actions"><button id="denied-signout" class="btn ghost" type="button">Sign out</button><a class="btn primary" href="/">Back to CineOtaku</a></div>
+    </section>
+
+    <section id="dash" class="hidden">
+      <div class="page-head"><div><p class="eyebrow">CONTROL CENTER</p><h1 class="page-title">Admin dashboard</h1><p class="muted" id="welcome"></p></div></div>
+      <div class="stat-cards" id="stats"></div>
+
+      <div class="tabs" role="tablist" aria-label="Admin sections" id="admin-tabs">
+        <button class="tab active" role="tab" type="button" data-tab="catalog" aria-selected="true">Catalog</button>
+        <button class="tab" role="tab" type="button" data-tab="add" aria-selected="false">Add from TMDb</button>
+        <button class="tab" role="tab" type="button" data-tab="seasons" aria-selected="false">Seasons &amp; episodes</button>
+        <button class="tab" role="tab" type="button" data-tab="providers" aria-selected="false">Provider links</button>
+      </div>
+
+      <!-- Catalog -->
+      <section class="panel tabpanel" data-panel="catalog">
+        <div class="panel-bar">
+          <h2 class="panel-h">Catalog entries</h2>
+          <div class="bar-tools">
+            <input id="cat-filter" type="search" placeholder="Filter by title…" aria-label="Filter catalog">
+            <select id="cat-status" aria-label="Filter by status"><option value="">All</option><option value="published">Published</option><option value="draft">Draft / hidden</option><option value="featured">Featured</option></select>
+            <button class="btn ghost small" id="refresh-btn" type="button">Refresh</button>
+          </div>
+        </div>
+        <div id="catalog-table" class="table-wrap"></div>
+      </section>
+
+      <!-- Add from TMDb -->
+      <section class="panel tabpanel hidden" data-panel="add">
+        <h2 class="panel-h">Search TMDb and add to the catalog</h2>
+        <form id="tmdb-form" class="bar-tools wrap">
+          <input id="tmdb-q" placeholder="Search title…" required maxlength="100" aria-label="TMDb search">
+          <select id="tmdb-kind" aria-label="Type"><option value="movie">Movie</option><option value="tv">Series / Anime</option></select>
+          <button class="btn primary" type="submit">Search</button>
+        </form>
+        <div class="checks"><label class="checkline"><input type="checkbox" id="add-publish"> Publish immediately</label>
+          <label class="checkline"><input type="checkbox" id="add-import" checked> Import seasons &amp; episodes (series)</label></div>
+        <p id="add-msg" class="status" role="status"></p>
+        <div id="tmdb-results" class="result-list"><p class="muted">Search above to find a title.</p></div>
+      </section>
+
+      <!-- Seasons & episodes -->
+      <section class="panel tabpanel hidden" data-panel="seasons">
+        <div class="panel-bar"><h2 class="panel-h">Seasons &amp; episodes</h2>
+          <div class="bar-tools"><select id="se-title" aria-label="Series"></select>
+            <button class="btn ghost small" id="se-sync" type="button">Sync from TMDb</button>
+            <button class="btn primary small" id="se-add-season" type="button">Add season</button></div></div>
+        <p id="se-msg" class="status" role="status"></p>
+        <div id="se-list"></div>
+      </section>
+
+      <!-- Providers -->
+      <section class="panel tabpanel hidden" data-panel="providers">
+        <h2 class="panel-h">Authorised provider links</h2>
+        <p class="muted small">Only add links you own or are licensed to distribute. Do not add scraped, DRM-bypassing or unauthorised signed URLs. Links must be HTTPS. “Embed” plays inside a sandboxed frame (no pop-ups); “External” opens the provider’s own page in a new tab.</p>
+        <form id="src-form" class="form-grid">
+          <label>Title<select id="src-title" required></select></label>
+          <label>Applies to<select id="src-scope"><option value="">Whole title (movie / series)</option></select></label>
+          <label>Provider name<input id="src-name" maxlength="80" minlength="2" required placeholder="Official provider"></label>
+          <label>HTTPS URL<input id="src-url" type="url" required placeholder="https://…"></label>
+          <label>Link type<select id="src-type"><option value="external">External (open provider)</option><option value="embed">Embed (play here)</option></select></label>
+          <label>Quality<input id="src-quality" maxlength="30" placeholder="1080p / HD"></label>
+          <label>Language<input id="src-lang" maxlength="30" placeholder="English / Japanese (sub)"></label>
+          <label>Region<input id="src-region" maxlength="30" placeholder="Global / BD"></label>
+          <label>Sort order<input id="src-sort" type="number" value="0" step="1"></label>
+          <label class="checkline"><input id="src-active" type="checkbox"> Active (visible to viewers)</label>
+          <label class="checkline wide"><input id="src-auth" type="checkbox" required> I confirm I own or am licensed to distribute this content, or the provider permits linking/embedding.</label>
+          <div class="wide"><button class="btn primary" type="submit">Save link</button> <span id="src-msg" class="status" role="status"></span></div>
+        </form>
+        <div class="panel-bar spaced"><h3>All provider links</h3><select id="src-filter" aria-label="Filter links by title"><option value="">All titles</option></select></div>
+        <div id="src-table" class="table-wrap"></div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="edit-dialog" class="modal edit-modal"><button class="close-btn" type="button" data-close aria-label="Close">×</button><div id="edit-body"></div></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
